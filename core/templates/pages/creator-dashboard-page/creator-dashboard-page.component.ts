@@ -16,26 +16,28 @@
  * @fileoverview Component for the creator dashboard.
  */
 
-import {Component, Renderer2} from '@angular/core';
-import {AppConstants} from 'app.constants';
-import {CreatorDashboardBackendApiService} from 'domain/creator_dashboard/creator-dashboard-backend-api.service';
-import {CreatorDashboardConstants} from './creator-dashboard-page.constants';
-import {RatingComputationService} from 'components/ratings/rating-computation/rating-computation.service';
-import {UrlInterpolationService} from 'domain/utilities/url-interpolation.service';
-import {LoaderService} from 'services/loader.service';
-import {UserService} from 'services/user.service';
-import {DateTimeFormatService} from 'services/date-time-format.service';
-import {ThreadStatusDisplayService} from 'pages/exploration-editor-page/feedback-tab/services/thread-status-display.service';
-import {ExplorationCreationService} from 'components/entity-creation-services/exploration-creation.service';
-import {forkJoin} from 'rxjs';
-import {WindowRef} from 'services/contextual/window-ref.service';
-import {CreatorDashboardData} from 'domain/creator_dashboard/creator-dashboard-backend-api.service';
-import {ProfileSummary} from 'domain/user/profile-summary.model';
-import {CreatorExplorationSummary} from 'domain/summary/creator-exploration-summary.model';
-import {CollectionSummary} from 'domain/collection/collection-summary.model';
-import {ExplorationRatings} from 'domain/summary/learner-exploration-summary.model';
-import {CreatorDashboardStats} from 'domain/creator_dashboard/creator-dashboard-stats.model';
-import {WindowDimensionsService} from 'services/contextual/window-dimensions.service';
+import { Component, Renderer2 } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AppConstants } from 'app.constants';
+import { CreatorDashboardBackendApiService } from 'domain/creator_dashboard/creator-dashboard-backend-api.service';
+import { CreatorDashboardConstants } from './creator-dashboard-page.constants';
+import { RatingComputationService } from 'components/ratings/rating-computation/rating-computation.service';
+import { UrlInterpolationService } from 'domain/utilities/url-interpolation.service';
+import { LoaderService } from 'services/loader.service';
+import { UserService } from 'services/user.service';
+import { DateTimeFormatService } from 'services/date-time-format.service';
+import { ThreadStatusDisplayService } from 'pages/exploration-editor-page/feedback-tab/services/thread-status-display.service';
+import { ExplorationCreationService } from 'components/entity-creation-services/exploration-creation.service';
+import { forkJoin } from 'rxjs';
+import { WindowRef } from 'services/contextual/window-ref.service';
+import { CreatorDashboardData } from 'domain/creator_dashboard/creator-dashboard-backend-api.service';
+import { ProfileSummary } from 'domain/user/profile-summary.model';
+import { CreatorExplorationSummary } from 'domain/summary/creator-exploration-summary.model';
+import { CollectionSummary } from 'domain/collection/collection-summary.model';
+import { ExplorationRatings } from 'domain/summary/learner-exploration-summary.model';
+import { CreatorDashboardStats } from 'domain/creator_dashboard/creator-dashboard-stats.model';
+import { WindowDimensionsService } from 'services/contextual/window-dimensions.service';
+import { QuestionImportExportModalComponent } from './modal-templates/question-import-export-modal.component';
 
 @Component({
   selector: 'oppia-creator-dashboard-page',
@@ -95,8 +97,9 @@ export class CreatorDashboardPageComponent {
     private dateTimeFormatService: DateTimeFormatService,
     private threadStatusDisplayService: ThreadStatusDisplayService,
     private explorationCreationService: ExplorationCreationService,
-    private windowRef: WindowRef
-  ) {}
+    private windowRef: WindowRef,
+    private ngbModal: NgbModal
+  ) { }
 
   EXP_PUBLISH_TEXTS = {
     defaultText:
@@ -133,7 +136,7 @@ export class CreatorDashboardPageComponent {
     this.myExplorationsView = newViewType;
     this.creatorDashboardBackendApiService
       .postExplorationViewAsync(newViewType)
-      .then(() => {});
+      .then(() => { });
   }
 
   checkMobileView(): boolean {
@@ -278,6 +281,13 @@ export class CreatorDashboardPageComponent {
 
   createNewExploration(): void {
     this.explorationCreationService.createNewExploration();
+  }
+
+  openQuestionImportExportModal(): void {
+    this.ngbModal.open(QuestionImportExportModalComponent, {
+      backdrop: 'static',
+      size: 'xl',
+    });
   }
 
   returnZero(): number {

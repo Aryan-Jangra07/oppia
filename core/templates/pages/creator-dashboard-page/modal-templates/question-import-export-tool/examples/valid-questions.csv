@@ -1,0 +1,5 @@
+id,type,question_text,difficulty,tags,hints,explanation,options,correct_answer,answer,tolerance,units
+mcq_csv_001,mcq,"What is the capital of France?",easy,geography;europe,"It's known as the City of Light","Paris is the capital of France","opt_a:London;opt_b:Paris;opt_c:Berlin;opt_d:Madrid",opt_b,,,
+numeric_csv_001,numeric,"What is 5 + 3?",easy,arithmetic;addition,"Add the two numbers","5 + 3 = 8",,,,8,0,
+mcq_csv_002,mcq,"Which planet is closest to the Sun?",medium,astronomy;solar-system,"Think about the order of planets","Mercury is the closest planet to the Sun","opt_a:Venus;opt_b:Earth;opt_c:Mercury;opt_d:Mars",opt_c,,,
+numeric_csv_002,numeric,"What is the value of pi to 2 decimal places?",medium,mathematics;geometry,"Pi is approximately 3.14159","Pi rounded to 2 decimal places is 3.14",,,,3.14,0.01,

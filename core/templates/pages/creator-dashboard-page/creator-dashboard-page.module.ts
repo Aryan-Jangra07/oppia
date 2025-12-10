@@ -16,14 +16,15 @@
  * @fileoverview Module for the creator dashboard page.
  */
 
-import {NgModule} from '@angular/core';
-import {RouterModule} from '@angular/router';
-import {SharedComponentsModule} from 'components/shared-component.module';
-import {ToastrModule} from 'ngx-toastr';
-import {InteractionExtensionsModule} from 'interactions/interactions.module';
-import {toastrConfig} from 'pages/oppia-root/app.module';
-import {CreatorDashboardPageComponent} from './creator-dashboard-page.component';
-import {CreatorDashboardPageRootComponent} from './creator-dashboard-page-root.component';
+import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { SharedComponentsModule } from 'components/shared-component.module';
+import { ToastrModule } from 'ngx-toastr';
+import { InteractionExtensionsModule } from 'interactions/interactions.module';
+import { toastrConfig } from 'pages/oppia-root/app.module';
+import { CreatorDashboardPageComponent } from './creator-dashboard-page.component';
+import { CreatorDashboardPageRootComponent } from './creator-dashboard-page-root.component';
+import { QuestionImportExportModalComponent } from './modal-templates/question-import-export-modal.component';
 
 @NgModule({
   imports: [
@@ -40,7 +41,11 @@ import {CreatorDashboardPageRootComponent} from './creator-dashboard-page-root.c
   declarations: [
     CreatorDashboardPageComponent,
     CreatorDashboardPageRootComponent,
+    QuestionImportExportModalComponent,
   ],
-  entryComponents: [CreatorDashboardPageComponent],
+  entryComponents: [
+    CreatorDashboardPageComponent,
+    QuestionImportExportModalComponent,
+  ],
 })
-export class CreatorDashboardPageModule {}
+export class CreatorDashboardPageModule { }

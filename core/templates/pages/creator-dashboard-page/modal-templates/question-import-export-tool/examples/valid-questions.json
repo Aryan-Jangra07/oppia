@@ -1,0 +1,102 @@
+{
+    "version": "1.0.0",
+    "metadata": {
+        "title": "Sample Mathematics Questions",
+        "description": "A collection of sample questions for testing the import functionality",
+        "author": "Oppia Team",
+        "created_date": "2025-12-10T15:23:00+05:30",
+        "tags": [
+            "mathematics",
+            "sample",
+            "test"
+        ]
+    },
+    "questions": [
+        {
+            "id": "mcq_math_001",
+            "type": "mcq",
+            "question_text": "What is 2 + 2?",
+            "difficulty": "easy",
+            "tags": [
+                "arithmetic",
+                "addition"
+            ],
+            "hints": [
+                "Think about counting",
+                "Use your fingers if needed"
+            ],
+            "explanation": "Adding 2 and 2 gives us 4.",
+            "options": [
+                {
+                    "id": "opt_a",
+                    "text": "3",
+                    "feedback": "Try again!"
+                },
+                {
+                    "id": "opt_b",
+                    "text": "4",
+                    "feedback": "Correct!"
+                },
+                {
+                    "id": "opt_c",
+                    "text": "5",
+                    "feedback": "Not quite."
+                },
+                {
+                    "id": "opt_d",
+                    "text": "6",
+                    "feedback": "Incorrect."
+                }
+            ],
+            "correct_answer": "opt_b"
+        },
+        {
+            "id": "numeric_math_001",
+            "type": "numeric",
+            "question_text": "What is the square root of 16?",
+            "difficulty": "easy",
+            "tags": [
+                "algebra",
+                "square-root"
+            ],
+            "hints": [
+                "What number multiplied by itself equals 16?"
+            ],
+            "explanation": "4 × 4 = 16, so the square root of 16 is 4.",
+            "answer": 4,
+            "tolerance": 0
+        },
+        {
+            "id": "mcq_math_002",
+            "type": "mcq",
+            "question_text": "Which of the following are even numbers?",
+            "difficulty": "medium",
+            "tags": [
+                "number-theory",
+                "even-numbers"
+            ],
+            "options": [
+                {
+                    "id": "opt_a",
+                    "text": "2"
+                },
+                {
+                    "id": "opt_b",
+                    "text": "3"
+                },
+                {
+                    "id": "opt_c",
+                    "text": "4"
+                },
+                {
+                    "id": "opt_d",
+                    "text": "7"
+                }
+            ],
+            "correct_answer": [
+                "opt_a",
+                "opt_c"
+            ]
+        }
+    ]
+}

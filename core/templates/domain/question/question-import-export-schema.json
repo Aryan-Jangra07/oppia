@@ -1,0 +1,96 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Oppia Question Import/Export Schema",
+    "description": "Schema for importing and exporting question sets in Oppia. Supports Multiple Choice Questions (MCQ) and Numeric questions.",
+    "version": "1.0.0",
+    "type": "object",
+    "required": [
+        "version",
+        "questions"
+    ],
+    "properties": {
+        "version": {
+            "type": "string",
+            "description": "Schema version for compatibility checking",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "metadata": {
+            "type": "object",
+            "description": "Optional metadata about the question set",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "author": {
+                    "type": "string"
+                },
+                "created_date": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "questions": {
+            "type": "array",
+            "description": "Array of questions",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "type",
+                    "question_text"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9_-]+$"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "mcq",
+                            "numeric"
+                        ]
+                    },
+                    "question_text": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "difficulty": {
+                        "type": "string",
+                        "enum": [
+                            "easy",
+                            "medium",
+                            "hard"
+                        ]
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "hints": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "explanation": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

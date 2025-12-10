@@ -1,0 +1,36 @@
+{
+    "version": "1.0.0",
+    "questions": [
+        {
+            "type": "mcq",
+            "question_text": "Missing ID field",
+            "options": [
+                {
+                    "id": "opt_a",
+                    "text": "Option A"
+                },
+                {
+                    "id": "opt_b",
+                    "text": "Option B"
+                }
+            ],
+            "correct_answer": "opt_a"
+        },
+        {
+            "id": "invalid_type_001",
+            "type": "invalid_type",
+            "question_text": "Invalid question type"
+        },
+        {
+            "id": "missing_options_001",
+            "type": "mcq",
+            "question_text": "MCQ without options",
+            "correct_answer": "opt_a"
+        },
+        {
+            "id": "missing_answer_001",
+            "type": "numeric",
+            "question_text": "Numeric question without answer"
+        }
+    ]
+}
