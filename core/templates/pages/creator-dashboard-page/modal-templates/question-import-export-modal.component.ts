@@ -17,7 +17,6 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { QuestionImportService } from 'domain/question/question-import.service';
 import { QuestionExportService } from 'domain/question/question-export.service';
 import { DuplicateResolutionService } from 'domain/question/duplicate-resolution.service';
@@ -29,7 +28,7 @@ import {
 } from 'domain/question/question-schema-validator.service';
 
 @Component({
-    selector: 'oppia-question-import-export-modal',
+    selector: 'oppia-question-import-export-tool',
     templateUrl: './question-import-export-modal.component.html',
     styleUrls: ['./question-import-export-modal.component.css'],
 })
@@ -58,10 +57,9 @@ export class QuestionImportExportModalComponent implements OnInit {
     showLogs = false;
 
     constructor(
-        public activeModal: NgbActiveModal,
-        private importService: QuestionImportService,
-        private exportService: QuestionExportService,
-        private duplicateService: DuplicateResolutionService,
+        private questionImportService: QuestionImportService,
+        private questionExportService: QuestionExportService,
+        private duplicateResolutionService: DuplicateResolutionService,
         public logService: ImportLogService
     ) { }
 
@@ -118,17 +116,17 @@ export class QuestionImportExportModalComponent implements OnInit {
         this.importedQuestionSet = null;
 
         try {
-            const result = await this.importService.importFromFile(this.selectedFile);
+            const result = await this.questionImportService.importFromFile(this.selectedFile);
 
             if (result.success && result.questionSet) {
                 // Check for duplicates
-                const duplicates = this.duplicateService.detectDuplicates(
+                const duplicates = this.duplicateResolutionService.detectDuplicates(
                     result.questionSet.questions
                 );
 
                 if (duplicates.length > 0) {
                     // Auto-resolve duplicates
-                    const resolution = this.duplicateService.autoResolveDuplicates(
+                    const resolution = this.duplicateResolutionService.autoResolveDuplicates(
                         result.questionSet.questions
                     );
                     result.questionSet.questions = resolution.questions;
@@ -193,7 +191,7 @@ export class QuestionImportExportModalComponent implements OnInit {
                 'success',
                 `Successfully imported ${this.importedQuestionSet.questions.length} questions`
             );
-            this.activeModal.close(this.importedQuestionSet);
+            // Close preview (no modal to dismiss in embedded mode)
         }
     }
 
@@ -237,7 +235,7 @@ export class QuestionImportExportModalComponent implements OnInit {
             questions: this.exportQuestions,
         };
 
-        this.exportService.exportAsJSON(questionSet);
+        this.questionExportService.exportAsJSON(questionSet);
         this.logService.log('export', 'success', `Exported ${this.exportQuestions.length} questions as JSON`);
     }
 
@@ -247,7 +245,7 @@ export class QuestionImportExportModalComponent implements OnInit {
             questions: this.exportQuestions,
         };
 
-        this.exportService.exportAsCSV(questionSet);
+        this.questionExportService.exportAsCSV(questionSet);
         this.logService.log('export', 'success', `Exported ${this.exportQuestions.length} questions as CSV`);
     }
 

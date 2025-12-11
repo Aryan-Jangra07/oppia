@@ -283,13 +283,6 @@ export class CreatorDashboardPageComponent {
     this.explorationCreationService.createNewExploration();
   }
 
-  openQuestionImportExportModal(): void {
-    this.ngbModal.open(QuestionImportExportModalComponent, {
-      backdrop: 'static',
-      size: 'xl',
-    });
-  }
-
   returnZero(): number {
     // This function is used as a custom function to
     // sort heading in the list view. Directly assigning

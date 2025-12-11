@@ -5,11 +5,6 @@
     <h1 tabindex="0" [innerHTML]="'I18N_DASHBOARD_CREATOR_DASHBOARD' | translate"></h1>
     <div class="oppia-dashboard-actions">
       <oppia-create-activity-button></oppia-create-activity-button>
-      <button class="btn oppia-question-import-export-button" (click)="openQuestionImportExportModal()"
-        aria-label="Import or Export Questions" title="Import or Export Questions">
-        <i class="fas fa-exchange-alt"></i>
-        <span class="button-text">Import/Export Questions</span>
-      </button>
     </div>
   </div>
 
@@ -102,6 +97,12 @@
         [ngClass]="{'oppia-dashboard-tabs-active': activeTab === 'mySubscribers'}">
         <a class="oppia-dashboard-tabs-text" tabindex="0" (keydown.enter)="setActiveTab('mySubscribers')"
           (click)="setActiveTab('mySubscribers')" [innerHTML]="'I18N_DASHBOARD_SUBSCRIBERS' | translate">
+        </a>
+      </li>
+      <li [ngClass]="{'oppia-dashboard-tabs-active': activeTab === 'questionBank'}">
+        <a class="oppia-dashboard-tabs-text" tabindex="0" (keydown.enter)="setActiveTab('questionBank')"
+          (click)="setActiveTab('questionBank')">
+          <i class="fas fa-database"></i> Question Bank
         </a>
       </li>
 
@@ -379,6 +380,11 @@
         </oppia-collection-summary-tile>
       </span>
     </ul>
+  </div>
+
+  <!-- Question Bank Tab -->
+  <div *ngIf="activeTab === 'questionBank'" class="question-bank-tab-content">
+    <oppia-question-import-export-tool></oppia-question-import-export-tool>
   </div>
 </div>
 <style>

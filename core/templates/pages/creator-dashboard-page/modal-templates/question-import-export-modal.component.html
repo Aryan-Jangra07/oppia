@@ -1,381 +1,366 @@
-<div class="question-import-export-modal">
-  <div class="modal-header">
-    <h3 class="modal-title">Question Import/Export Tool</h3>
-    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
+<div class="question-import-export-container">
+  <!-- Tab Navigation -->
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="activeTab === 'import'" (click)="setActiveTab('import')">
+        <i class="fas fa-upload"></i> Import
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="activeTab === 'export'" (click)="setActiveTab('export')">
+        <i class="fas fa-download"></i> Export
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="activeTab === 'schema'" (click)="setActiveTab('schema')">
+        <i class="fas fa-book"></i> Schema
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="activeTab === 'logs'" (click)="setActiveTab('logs')">
+        <i class="fas fa-list"></i> Logs
+      </a>
+    </li>
+  </ul>
 
-  <div class="modal-body">
-    <!-- Tab Navigation -->
-    <ul class="nav nav-tabs mb-3">
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="activeTab === 'import'" (click)="setActiveTab('import')">
-          <i class="fas fa-upload"></i> Import
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="activeTab === 'export'" (click)="setActiveTab('export')">
-          <i class="fas fa-download"></i> Export
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="activeTab === 'schema'" (click)="setActiveTab('schema')">
-          <i class="fas fa-book"></i> Schema
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="activeTab === 'logs'" (click)="setActiveTab('logs')">
-          <i class="fas fa-list"></i> Logs
-        </a>
-      </li>
-    </ul>
+  <!-- Import Tab -->
+  <div *ngIf="activeTab === 'import'" class="tab-content">
+    <h4>Import Questions</h4>
+    <p class="text-muted">Upload a JSON or CSV file containing questions.</p>
 
-    <!-- Import Tab -->
-    <div *ngIf="activeTab === 'import'" class="tab-content">
-      <h4>Import Questions</h4>
-      <p class="text-muted">Upload a JSON or CSV file containing questions.</p>
+    <!-- File Upload Area -->
+    <div class="upload-area" [class.dragging]="isDragging" (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+      <div class="upload-icon">
+        <i class="fas fa-cloud-upload-alt fa-3x"></i>
+      </div>
+      <p class="upload-text">Drag and drop a file here, or click to select</p>
+      <input type="file" class="file-input" accept=".json,.csv" (change)="onFileSelected($event)" #fileInput>
+      <button class="btn btn-primary" (click)="fileInput.click()">
+        Choose File
+      </button>
+    </div>
 
-      <!-- File Upload Area -->
-      <div class="upload-area" [class.dragging]="isDragging" (dragover)="onDragOver($event)"
-        (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
-        <div class="upload-icon">
-          <i class="fas fa-cloud-upload-alt fa-3x"></i>
+    <!-- Selected File Info -->
+    <div *ngIf="selectedFile" class="selected-file mt-3">
+      <i class="fas fa-file"></i>
+      <span class="filename">{{ selectedFile.name }}</span>
+      <span class="filesize">({{ (selectedFile.size / 1024).toFixed(2) }} KB)</span>
+      <button class="btn btn-success ml-3" (click)="importFile()" [disabled]="isImporting">
+        <span *ngIf="!isImporting">Import</span>
+        <span *ngIf="isImporting">
+          <i class="fas fa-spinner fa-spin"></i> Importing...
+        </span>
+      </button>
+    </div>
+
+    <!-- Validation Errors -->
+    <div *ngIf="validationErrors.length > 0" class="error-list mt-3">
+      <h5 class="text-danger">
+        <i class="fas fa-exclamation-triangle"></i> Validation Errors ({{ validationErrors.length }})
+      </h5>
+      <div class="error-items">
+        <div *ngFor="let error of validationErrors" class="error-item" [ngClass]="getErrorClass(error)">
+          <strong>{{ error.field }}:</strong> {{ error.message }}
+          <span *ngIf="error.questionId" class="question-id">(ID: {{ error.questionId }})</span>
+          <span *ngIf="error.lineNumber" class="line-number">(Line: {{ error.lineNumber }})</span>
         </div>
-        <p class="upload-text">Drag and drop a file here, or click to select</p>
-        <input type="file" class="file-input" accept=".json,.csv" (change)="onFileSelected($event)" #fileInput>
-        <button class="btn btn-primary" (click)="fileInput.click()">
-          Choose File
-        </button>
+      </div>
+    </div>
+
+    <!-- Preview Success -->
+    <div *ngIf="showPreview && importedQuestionSet" class="preview-section mt-3">
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        Successfully imported {{ importedQuestionSet.questions.length }} questions!
       </div>
 
-      <!-- Selected File Info -->
-      <div *ngIf="selectedFile" class="selected-file mt-3">
-        <i class="fas fa-file"></i>
-        <span class="filename">{{ selectedFile.name }}</span>
-        <span class="filesize">({{ (selectedFile.size / 1024).toFixed(2) }} KB)</span>
-        <button class="btn btn-success ml-3" (click)="importFile()" [disabled]="isImporting">
-          <span *ngIf="!isImporting">Import</span>
-          <span *ngIf="isImporting">
-            <i class="fas fa-spinner fa-spin"></i> Importing...
-          </span>
-        </button>
-      </div>
-
-      <!-- Validation Errors -->
-      <div *ngIf="validationErrors.length > 0" class="error-list mt-3">
-        <h5 class="text-danger">
-          <i class="fas fa-exclamation-triangle"></i> Validation Errors ({{ validationErrors.length }})
+      <!-- Oppia-Style Summary Card -->
+      <mat-card class="oppia-import-summary-card mb-3">
+        <h5 class="summary-title">
+          <i class="fas fa-chart-bar"></i> Import Summary
         </h5>
-        <div class="error-items">
-          <div *ngFor="let error of validationErrors" class="error-item" [ngClass]="getErrorClass(error)">
-            <strong>{{ error.field }}:</strong> {{ error.message }}
-            <span *ngIf="error.questionId" class="question-id">(ID: {{ error.questionId }})</span>
-            <span *ngIf="error.lineNumber" class="line-number">(Line: {{ error.lineNumber }})</span>
+        <div class="summary-stats-grid">
+          <div class="oppia-stat-item">
+            <div class="stat-label">Total Questions</div>
+            <div class="stat-value">{{ getImportSummary().total }}</div>
+          </div>
+          <div class="oppia-stat-item">
+            <div class="stat-label">Question Types</div>
+            <div class="stat-badges">
+              <span class="badge badge-primary" *ngIf="getImportSummary().mcqCount > 0">
+                MCQ: {{ getImportSummary().mcqCount }}
+              </span>
+              <span class="badge badge-info" *ngIf="getImportSummary().numericCount > 0">
+                Numeric: {{ getImportSummary().numericCount }}
+              </span>
+            </div>
+          </div>
+          <div class="oppia-stat-item">
+            <div class="stat-label">Difficulty Levels</div>
+            <div class="stat-badges">
+              <span class="badge badge-success" *ngIf="getImportSummary().easyCount > 0">
+                Easy: {{ getImportSummary().easyCount }}
+              </span>
+              <span class="badge badge-warning" *ngIf="getImportSummary().mediumCount > 0">
+                Medium: {{ getImportSummary().mediumCount }}
+              </span>
+              <span class="badge badge-danger" *ngIf="getImportSummary().hardCount > 0">
+                Hard: {{ getImportSummary().hardCount }}
+              </span>
+            </div>
+          </div>
+          <div class="oppia-stat-item" *ngIf="getImportSummary().tags.length > 0">
+            <div class="stat-label">Tags ({{ getImportSummary().tags.length }})</div>
+            <div class="stat-badges">
+              <span *ngFor="let tag of getImportSummary().tags.slice(0, 5)" class="badge badge-secondary mr-1">
+                {{ tag }}
+              </span>
+              <span *ngIf="getImportSummary().tags.length > 5" class="text-muted">
+                +{{ getImportSummary().tags.length - 5 }} more
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      </mat-card>
 
-      <!-- Preview Success -->
-      <div *ngIf="showPreview && importedQuestionSet" class="preview-section mt-3">
-        <div class="alert alert-success">
-          <i class="fas fa-check-circle"></i>
-          Successfully imported {{ importedQuestionSet.questions.length }} questions!
-        </div>
+      <h5>Question Preview</h5>
 
-        <!-- Oppia-Style Summary Card -->
-        <mat-card class="oppia-import-summary-card mb-3">
-          <h5 class="summary-title">
-            <i class="fas fa-chart-bar"></i> Import Summary
-          </h5>
-          <div class="summary-stats-grid">
-            <div class="oppia-stat-item">
-              <div class="stat-label">Total Questions</div>
-              <div class="stat-value">{{ getImportSummary().total }}</div>
+      <!-- Oppia-Style Question Cards -->
+      <div class="question-cards-container">
+        <mat-card *ngFor="let question of paginatedQuestions" class="oppia-question-preview-card mb-3">
+          <div class="question-card-header" (click)="toggleQuestionDetails(question.id)">
+            <div class="question-header-left">
+              <span class="question-id-badge">{{ question.id }}</span>
+              <span class="badge badge-oppia-primary ml-2" [class.badge-primary]="question.type === 'mcq'"
+                [class.badge-info]="question.type === 'numeric'">
+                {{ question.type.toUpperCase() }}
+              </span>
+              <span *ngIf="question.difficulty" class="badge ml-2"
+                [class.badge-success]="question.difficulty === 'easy'"
+                [class.badge-warning]="question.difficulty === 'medium'"
+                [class.badge-danger]="question.difficulty === 'hard'">
+                {{ question.difficulty }}
+              </span>
             </div>
-            <div class="oppia-stat-item">
-              <div class="stat-label">Question Types</div>
-              <div class="stat-badges">
-                <span class="badge badge-primary" *ngIf="getImportSummary().mcqCount > 0">
-                  MCQ: {{ getImportSummary().mcqCount }}
-                </span>
-                <span class="badge badge-info" *ngIf="getImportSummary().numericCount > 0">
-                  Numeric: {{ getImportSummary().numericCount }}
-                </span>
+            <div class="question-header-right">
+              <i class="fas" [class.fa-chevron-down]="!isQuestionExpanded(question.id)"
+                [class.fa-chevron-up]="isQuestionExpanded(question.id)"></i>
+            </div>
+          </div>
+
+          <div class="question-card-body">
+            <div class="question-text-display">{{ question.question_text }}</div>
+
+            <div *ngIf="question.tags && question.tags.length > 0" class="question-tags mt-2">
+              <span *ngFor="let tag of question.tags" class="badge badge-secondary mr-1">
+                {{ tag }}
+              </span>
+            </div>
+
+            <!-- Expandable Details -->
+            <div *ngIf="isQuestionExpanded(question.id)" class="question-details mt-3">
+              <!-- MCQ Options -->
+              <div *ngIf="question.type === 'mcq' && question.options" class="question-options">
+                <strong>Options:</strong>
+                <ul class="options-list">
+                  <li *ngFor="let option of question.options"
+                    [class.correct-option]="option.id === question.correct_answer">
+                    <span class="option-id">{{ option.id }}:</span> {{ option.text }}
+                    <span *ngIf="option.id === question.correct_answer" class="correct-indicator">
+                      <i class="fas fa-check-circle text-success"></i> Correct
+                    </span>
+                  </li>
+                </ul>
               </div>
-            </div>
-            <div class="oppia-stat-item">
-              <div class="stat-label">Difficulty Levels</div>
-              <div class="stat-badges">
-                <span class="badge badge-success" *ngIf="getImportSummary().easyCount > 0">
-                  Easy: {{ getImportSummary().easyCount }}
-                </span>
-                <span class="badge badge-warning" *ngIf="getImportSummary().mediumCount > 0">
-                  Medium: {{ getImportSummary().mediumCount }}
-                </span>
-                <span class="badge badge-danger" *ngIf="getImportSummary().hardCount > 0">
-                  Hard: {{ getImportSummary().hardCount }}
-                </span>
+
+              <!-- Numeric Answer -->
+              <div *ngIf="question.type === 'numeric'" class="question-answer">
+                <strong>Answer:</strong> {{ question.answer }}
+                <span *ngIf="question.units"> {{ question.units }}</span>
+                <span *ngIf="question.tolerance"> (Tolerance: ±{{ question.tolerance }})</span>
               </div>
-            </div>
-            <div class="oppia-stat-item" *ngIf="getImportSummary().tags.length > 0">
-              <div class="stat-label">Tags ({{ getImportSummary().tags.length }})</div>
-              <div class="stat-badges">
-                <span *ngFor="let tag of getImportSummary().tags.slice(0, 5)" class="badge badge-secondary mr-1">
-                  {{ tag }}
-                </span>
-                <span *ngIf="getImportSummary().tags.length > 5" class="text-muted">
-                  +{{ getImportSummary().tags.length - 5 }} more
-                </span>
+
+              <!-- Hints -->
+              <div *ngIf="question.hints && question.hints.length > 0" class="question-hints mt-2">
+                <strong>Hints:</strong>
+                <ul>
+                  <li *ngFor="let hint of question.hints">{{ hint }}</li>
+                </ul>
+              </div>
+
+              <!-- Explanation -->
+              <div *ngIf="question.explanation" class="question-explanation mt-2">
+                <strong>Explanation:</strong>
+                <p>{{ question.explanation }}</p>
               </div>
             </div>
           </div>
         </mat-card>
-
-        <h5>Question Preview</h5>
-
-        <!-- Oppia-Style Question Cards -->
-        <div class="question-cards-container">
-          <mat-card *ngFor="let question of paginatedQuestions" class="oppia-question-preview-card mb-3">
-            <div class="question-card-header" (click)="toggleQuestionDetails(question.id)">
-              <div class="question-header-left">
-                <span class="question-id-badge">{{ question.id }}</span>
-                <span class="badge badge-oppia-primary ml-2" [class.badge-primary]="question.type === 'mcq'"
-                  [class.badge-info]="question.type === 'numeric'">
-                  {{ question.type.toUpperCase() }}
-                </span>
-                <span *ngIf="question.difficulty" class="badge ml-2"
-                  [class.badge-success]="question.difficulty === 'easy'"
-                  [class.badge-warning]="question.difficulty === 'medium'"
-                  [class.badge-danger]="question.difficulty === 'hard'">
-                  {{ question.difficulty }}
-                </span>
-              </div>
-              <div class="question-header-right">
-                <i class="fas" [class.fa-chevron-down]="!isQuestionExpanded(question.id)"
-                  [class.fa-chevron-up]="isQuestionExpanded(question.id)"></i>
-              </div>
-            </div>
-
-            <div class="question-card-body">
-              <div class="question-text-display">{{ question.question_text }}</div>
-
-              <div *ngIf="question.tags && question.tags.length > 0" class="question-tags mt-2">
-                <span *ngFor="let tag of question.tags" class="badge badge-secondary mr-1">
-                  {{ tag }}
-                </span>
-              </div>
-
-              <!-- Expandable Details -->
-              <div *ngIf="isQuestionExpanded(question.id)" class="question-details mt-3">
-                <!-- MCQ Options -->
-                <div *ngIf="question.type === 'mcq' && question.options" class="question-options">
-                  <strong>Options:</strong>
-                  <ul class="options-list">
-                    <li *ngFor="let option of question.options"
-                      [class.correct-option]="option.id === question.correct_answer">
-                      <span class="option-id">{{ option.id }}:</span> {{ option.text }}
-                      <span *ngIf="option.id === question.correct_answer" class="correct-indicator">
-                        <i class="fas fa-check-circle text-success"></i> Correct
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-
-                <!-- Numeric Answer -->
-                <div *ngIf="question.type === 'numeric'" class="question-answer">
-                  <strong>Answer:</strong> {{ question.answer }}
-                  <span *ngIf="question.units"> {{ question.units }}</span>
-                  <span *ngIf="question.tolerance"> (Tolerance: ±{{ question.tolerance }})</span>
-                </div>
-
-                <!-- Hints -->
-                <div *ngIf="question.hints && question.hints.length > 0" class="question-hints mt-2">
-                  <strong>Hints:</strong>
-                  <ul>
-                    <li *ngFor="let hint of question.hints">{{ hint }}</li>
-                  </ul>
-                </div>
-
-                <!-- Explanation -->
-                <div *ngIf="question.explanation" class="question-explanation mt-2">
-                  <strong>Explanation:</strong>
-                  <p>{{ question.explanation }}</p>
-                </div>
-              </div>
-            </div>
-          </mat-card>
-        </div>
-
-        <!-- Pagination -->
-        <div class="pagination-controls" *ngIf="totalPages > 1">
-          <button class="btn btn-sm btn-oppia-outline" (click)="previousPage()" [disabled]="currentPage === 1">
-            <i class="fas fa-chevron-left"></i> Previous
-          </button>
-          <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
-          <button class="btn btn-sm btn-oppia-outline" (click)="nextPage()" [disabled]="currentPage === totalPages">
-            Next <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-
-        <div class="mt-3">
-          <button class="btn btn-oppia-primary" (click)="confirmImport()">
-            <i class="fas fa-check"></i> Confirm Import
-          </button>
-          <button class="btn btn-secondary ml-2" (click)="closePreview()">
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Export Tab -->
-    <div *ngIf="activeTab === 'export'" class="tab-content">
-      <h4>Export Questions</h4>
-      <p class="text-muted">Export your questions as JSON or CSV files.</p>
-
-      <div class="export-info">
-        <p><strong>Questions to export:</strong> {{ exportQuestions.length }}</p>
-        <p class="text-muted" *ngIf="exportQuestions.length === 0">
-          <i class="fas fa-info-circle"></i>
-          No questions available. Import questions first, then you can export them.
-        </p>
-        <p class="text-success" *ngIf="exportQuestions.length > 0">
-          <i class="fas fa-check-circle"></i>
-          Ready to export {{ exportQuestions.length }} question(s) from your imported set.
-        </p>
       </div>
 
-      <div class="export-buttons mt-3">
-        <button class="btn btn-primary mr-2" (click)="exportAsJSON()" [disabled]="exportQuestions.length === 0">
-          <i class="fas fa-file-code"></i> Export as JSON
+      <!-- Pagination -->
+      <div class="pagination-controls" *ngIf="totalPages > 1">
+        <button class="btn btn-sm btn-oppia-outline" (click)="previousPage()" [disabled]="currentPage === 1">
+          <i class="fas fa-chevron-left"></i> Previous
         </button>
-        <button class="btn btn-info" (click)="exportAsCSV()" [disabled]="exportQuestions.length === 0">
-          <i class="fas fa-file-csv"></i> Export as CSV
-        </button>
-      </div>
-    </div>
-
-    <!-- Schema Tab -->
-    <div *ngIf="activeTab === 'schema'" class="tab-content">
-      <h4>Question Schema Documentation</h4>
-
-      <div class="schema-doc">
-        <h5>Supported Question Types</h5>
-
-        <div class="question-type-doc">
-          <h6><span class="badge badge-primary">MCQ</span> Multiple Choice Questions</h6>
-          <p>Required fields:</p>
-          <ul>
-            <li><code>id</code> - Unique identifier (letters, numbers, hyphens, underscores)</li>
-            <li><code>type</code> - Must be "mcq"</li>
-            <li><code>question_text</code> - The question text</li>
-            <li><code>options</code> - Array of answer options (minimum 2)</li>
-            <li><code>correct_answer</code> - ID of the correct option</li>
-          </ul>
-          <p>Optional fields:</p>
-          <ul>
-            <li><code>difficulty</code> - "easy", "medium", or "hard"</li>
-            <li><code>tags</code> - Array of tags</li>
-            <li><code>hints</code> - Array of hint strings</li>
-            <li><code>explanation</code> - Solution explanation</li>
-          </ul>
-        </div>
-
-        <div class="question-type-doc mt-3">
-          <h6><span class="badge badge-info">NUMERIC</span> Numeric Questions</h6>
-          <p>Required fields:</p>
-          <ul>
-            <li><code>id</code> - Unique identifier</li>
-            <li><code>type</code> - Must be "numeric"</li>
-            <li><code>question_text</code> - The question text</li>
-            <li><code>answer</code> - The correct numeric answer</li>
-          </ul>
-          <p>Optional fields:</p>
-          <ul>
-            <li><code>tolerance</code> - Acceptable tolerance (default: 0)</li>
-            <li><code>units</code> - Units for the answer (e.g., "meters", "kg")</li>
-            <li><code>difficulty</code>, <code>tags</code>, <code>hints</code>, <code>explanation</code></li>
-          </ul>
-        </div>
-
-        <div class="csv-format mt-3">
-          <h5>CSV Format</h5>
-          <p>CSV files should have the following headers:</p>
-          <pre>id,type,question_text,difficulty,tags,hints,explanation,options,correct_answer,answer,tolerance,units</pre>
-          <p class="text-muted">
-            <strong>Note:</strong> Use semicolons (;) to separate multiple values in tags, hints, and options.
-            For options, use the format: <code>id1:text1;id2:text2</code>
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Logs Tab -->
-    <div *ngIf="activeTab === 'logs'" class="tab-content">
-      <h4>Import/Export Logs</h4>
-
-      <div class="logs-actions mb-3">
-        <button class="btn btn-primary" (click)="downloadLogs()">
-          <i class="fas fa-download"></i> Download Logs
-        </button>
-        <button class="btn btn-danger ml-2" (click)="clearLogs()">
-          <i class="fas fa-trash"></i> Clear Logs
+        <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+        <button class="btn btn-sm btn-oppia-outline" (click)="nextPage()" [disabled]="currentPage === totalPages">
+          Next <i class="fas fa-chevron-right"></i>
         </button>
       </div>
 
-      <div class="logs-list">
-        <div *ngIf="logService.getImportLogs().length === 0" class="alert alert-info">
-          No logs available yet. Import or export questions to see logs here.
-        </div>
-
-        <div *ngFor="let log of logService.getImportLogs()" class="log-entry">
-          <div class="log-header">
-            <span class="log-timestamp">{{ log.timestamp | date:'short' }}</span>
-            <span class="log-filename">{{ log.filename }}</span>
-            <span class="badge" [class.badge-success]="log.status === 'success'"
-              [class.badge-warning]="log.status === 'partial'" [class.badge-danger]="log.status === 'failed'">
-              {{ log.status.toUpperCase() }}
-            </span>
-          </div>
-          <div class="log-stats">
-            <span class="stat">Total: {{ log.totalQuestions }}</span>
-            <span class="stat text-success">Success: {{ log.successCount }}</span>
-            <span class="stat text-danger">Errors: {{ log.errorCount }}</span>
-            <span class="stat text-warning">Warnings: {{ log.warningCount }}</span>
-          </div>
-
-          <div *ngIf="log.validationErrors.length > 0" class="log-errors">
-            <strong>Errors:</strong>
-            <ul>
-              <li *ngFor="let error of log.validationErrors.slice(0, 5)">
-                {{ error.field }}: {{ error.message }}
-              </li>
-              <li *ngIf="log.validationErrors.length > 5" class="text-muted">
-                ... and {{ log.validationErrors.length - 5 }} more errors
-              </li>
-            </ul>
-          </div>
-
-          <div *ngIf="log.duplicates.length > 0" class="log-duplicates">
-            <strong>Duplicates Resolved:</strong>
-            <ul>
-              <li *ngFor="let dup of log.duplicates.slice(0, 3)">
-                {{ dup.originalId }} → {{ dup.newId }} ({{ dup.action }})
-              </li>
-              <li *ngIf="log.duplicates.length > 3" class="text-muted">
-                ... and {{ log.duplicates.length - 3 }} more duplicates
-              </li>
-            </ul>
-          </div>
-        </div>
+      <div class="mt-3">
+        <button class="btn btn-oppia-primary" (click)="confirmImport()">
+          <i class="fas fa-check"></i> Confirm Import
+        </button>
+        <button class="btn btn-secondary ml-2" (click)="closePreview()">
+          Cancel
+        </button>
       </div>
     </div>
   </div>
 
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">
-      Close
-    </button>
+  <!-- Export Tab -->
+  <div *ngIf="activeTab === 'export'" class="tab-content">
+    <h4>Export Questions</h4>
+    <p class="text-muted">Export your questions as JSON or CSV files.</p>
+
+    <div class="export-info">
+      <p><strong>Questions to export:</strong> {{ exportQuestions.length }}</p>
+      <p class="text-muted" *ngIf="exportQuestions.length === 0">
+        <i class="fas fa-info-circle"></i>
+        No questions available. Import questions first, then you can export them.
+      </p>
+      <p class="text-success" *ngIf="exportQuestions.length > 0">
+        <i class="fas fa-check-circle"></i>
+        Ready to export {{ exportQuestions.length }} question(s) from your imported set.
+      </p>
+    </div>
+
+    <div class="export-buttons mt-3">
+      <button class="btn btn-primary mr-2" (click)="exportAsJSON()" [disabled]="exportQuestions.length === 0">
+        <i class="fas fa-file-code"></i> Export as JSON
+      </button>
+      <button class="btn btn-info" (click)="exportAsCSV()" [disabled]="exportQuestions.length === 0">
+        <i class="fas fa-file-csv"></i> Export as CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Schema Tab -->
+  <div *ngIf="activeTab === 'schema'" class="tab-content">
+    <h4>Question Schema Documentation</h4>
+
+    <div class="schema-doc">
+      <h5>Supported Question Types</h5>
+
+      <div class="question-type-doc">
+        <h6><span class="badge badge-primary">MCQ</span> Multiple Choice Questions</h6>
+        <p>Required fields:</p>
+        <ul>
+          <li><code>id</code> - Unique identifier (letters, numbers, hyphens, underscores)</li>
+          <li><code>type</code> - Must be "mcq"</li>
+          <li><code>question_text</code> - The question text</li>
+          <li><code>options</code> - Array of answer options (minimum 2)</li>
+          <li><code>correct_answer</code> - ID of the correct option</li>
+        </ul>
+        <p>Optional fields:</p>
+        <ul>
+          <li><code>difficulty</code> - "easy", "medium", or "hard"</li>
+          <li><code>tags</code> - Array of tags</li>
+          <li><code>hints</code> - Array of hint strings</li>
+          <li><code>explanation</code> - Solution explanation</li>
+        </ul>
+      </div>
+
+      <div class="question-type-doc mt-3">
+        <h6><span class="badge badge-info">NUMERIC</span> Numeric Questions</h6>
+        <p>Required fields:</p>
+        <ul>
+          <li><code>id</code> - Unique identifier</li>
+          <li><code>type</code> - Must be "numeric"</li>
+          <li><code>question_text</code> - The question text</li>
+          <li><code>answer</code> - The correct numeric answer</li>
+        </ul>
+        <p>Optional fields:</p>
+        <ul>
+          <li><code>tolerance</code> - Acceptable tolerance (default: 0)</li>
+          <li><code>units</code> - Units for the answer (e.g., "meters", "kg")</li>
+          <li><code>difficulty</code>, <code>tags</code>, <code>hints</code>, <code>explanation</code></li>
+        </ul>
+      </div>
+
+      <div class="csv-format mt-3">
+        <h5>CSV Format</h5>
+        <p>CSV files should have the following headers:</p>
+        <pre>id,type,question_text,difficulty,tags,hints,explanation,options,correct_answer,answer,tolerance,units</pre>
+        <p class="text-muted">
+          <strong>Note:</strong> Use semicolons (;) to separate multiple values in tags, hints, and options.
+          For options, use the format: <code>id1:text1;id2:text2</code>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Tab -->
+  <div *ngIf="activeTab === 'logs'" class="tab-content">
+    <h4>Import/Export Logs</h4>
+
+    <div class="logs-actions mb-3">
+      <button class="btn btn-primary" (click)="downloadLogs()">
+        <i class="fas fa-download"></i> Download Logs
+      </button>
+      <button class="btn btn-danger ml-2" (click)="clearLogs()">
+        <i class="fas fa-trash"></i> Clear Logs
+      </button>
+    </div>
+
+    <div class="logs-list">
+      <div *ngIf="logService.getImportLogs().length === 0" class="alert alert-info">
+        No logs available yet. Import or export questions to see logs here.
+      </div>
+
+      <div *ngFor="let log of logService.getImportLogs()" class="log-entry">
+        <div class="log-header">
+          <span class="log-timestamp">{{ log.timestamp | date:'short' }}</span>
+          <span class="log-filename">{{ log.filename }}</span>
+          <span class="badge" [class.badge-success]="log.status === 'success'"
+            [class.badge-warning]="log.status === 'partial'" [class.badge-danger]="log.status === 'failed'">
+            {{ log.status.toUpperCase() }}
+          </span>
+        </div>
+        <div class="log-stats">
+          <span class="stat">Total: {{ log.totalQuestions }}</span>
+          <span class="stat text-success">Success: {{ log.successCount }}</span>
+          <span class="stat text-danger">Errors: {{ log.errorCount }}</span>
+          <span class="stat text-warning">Warnings: {{ log.warningCount }}</span>
+        </div>
+
+        <div *ngIf="log.validationErrors.length > 0" class="log-errors">
+          <strong>Errors:</strong>
+          <ul>
+            <li *ngFor="let error of log.validationErrors.slice(0, 5)">
+              {{ error.field }}: {{ error.message }}
+            </li>
+            <li *ngIf="log.validationErrors.length > 5" class="text-muted">
+              ... and {{ log.validationErrors.length - 5 }} more errors
+            </li>
+          </ul>
+        </div>
+
+        <div *ngIf="log.duplicates.length > 0" class="log-duplicates">
+          <strong>Duplicates Resolved:</strong>
+          <ul>
+            <li *ngFor="let dup of log.duplicates.slice(0, 3)">
+              {{ dup.originalId }} → {{ dup.newId }} ({{ dup.action }})
+            </li>
+            <li *ngIf="log.duplicates.length > 3" class="text-muted">
+              ... and {{ log.duplicates.length - 3 }} more duplicates
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
