@@ -1391,6 +1391,9 @@ class ExplorationDict(TypedDict, total=False):
     edits_allowed: bool
     next_content_id_index: int
     version: int
+    # Here we use type Any because linked_questions can contain various
+    # question data structures with different schemas that cannot be
+    # precisely typed without creating circular dependencies.
     linked_questions: List[Dict[str, Any]]
 
 
@@ -1532,6 +1535,8 @@ class Exploration(translation_domain.BaseTranslatableObject):
                 is created.
             last_updated: datetime.datetime. Date and time when the exploration
                 was last updated.
+            linked_questions: list(dict)|None. Optional list of question
+                dictionaries linked to this exploration for quiz generation.
         """
         self.id = exploration_id
         self.title = title
