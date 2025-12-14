@@ -16,15 +16,20 @@
  * @fileoverview Module for the creator dashboard page.
  */
 
-import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { SharedComponentsModule } from 'components/shared-component.module';
-import { ToastrModule } from 'ngx-toastr';
-import { InteractionExtensionsModule } from 'interactions/interactions.module';
-import { toastrConfig } from 'pages/oppia-root/app.module';
-import { CreatorDashboardPageComponent } from './creator-dashboard-page.component';
-import { CreatorDashboardPageRootComponent } from './creator-dashboard-page-root.component';
-import { QuestionImportExportModalComponent } from './modal-templates/question-import-export-modal.component';
+import {NgModule} from '@angular/core';
+import {RouterModule} from '@angular/router';
+import {SharedComponentsModule} from 'components/shared-component.module';
+import {ToastrModule} from 'ngx-toastr';
+import {InteractionExtensionsModule} from 'interactions/interactions.module';
+import {toastrConfig} from 'pages/oppia-root/app.module';
+import {CreatorDashboardPageComponent} from './creator-dashboard-page.component';
+import {CreatorDashboardPageRootComponent} from './creator-dashboard-page-root.component';
+import {QuestionImportExportModalComponent} from './modal-templates/question-import-export-modal.component';
+import {QuestionImportService} from 'domain/question/question-import.service';
+import {QuestionExportService} from 'domain/question/question-export.service';
+import {DuplicateResolutionService} from 'domain/question/duplicate-resolution.service';
+import {ImportLogService} from 'domain/question/import-log.service';
+import {QuestionSchemaValidatorService} from 'domain/question/question-schema-validator.service';
 
 @NgModule({
   imports: [
@@ -47,5 +52,12 @@ import { QuestionImportExportModalComponent } from './modal-templates/question-i
     CreatorDashboardPageComponent,
     QuestionImportExportModalComponent,
   ],
+  providers: [
+    QuestionImportService,
+    QuestionExportService,
+    DuplicateResolutionService,
+    ImportLogService,
+    QuestionSchemaValidatorService,
+  ],
 })
-export class CreatorDashboardPageModule { }
+export class CreatorDashboardPageModule {}

@@ -261,6 +261,11 @@ class ExplorationModel(base_models.VersionedModel):
     correctness_feedback_enabled = datastore_services.BooleanProperty(
         default=True, indexed=True
     )
+    # List of linked questions imported via the Import-Export tool.
+    # Each question is stored as a dictionary containing question data.
+    linked_questions = datastore_services.JsonProperty(
+        default=[], indexed=False
+    )
 
     @staticmethod
     def get_deletion_policy() -> base_models.DELETION_POLICY:
@@ -296,6 +301,7 @@ class ExplorationModel(base_models.VersionedModel):
                 'correctness_feedback_enabled': base_models.EXPORT_POLICY.NOT_APPLICABLE,
                 'next_content_id_index': base_models.EXPORT_POLICY.NOT_APPLICABLE,
                 'edits_allowed': base_models.EXPORT_POLICY.NOT_APPLICABLE,
+                'linked_questions': base_models.EXPORT_POLICY.NOT_APPLICABLE,
             },
         )
 

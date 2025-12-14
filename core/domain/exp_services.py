@@ -861,6 +861,10 @@ def apply_change_list(
                     exploration.update_next_content_id_index(
                         next_content_id_index
                     )
+            elif change.cmd == exp_domain.CMD_UPDATE_LINKED_QUESTIONS:
+                # Handle updating linked questions for the exploration.
+                if hasattr(change, 'linked_questions'):
+                    exploration.linked_questions = change.linked_questions
             elif (
                 change.cmd
                 == exp_domain.CMD_MIGRATE_STATES_SCHEMA_TO_LATEST_VERSION
@@ -936,6 +940,7 @@ def populate_exp_model_fields(
     exp_model.auto_tts_enabled = exploration.auto_tts_enabled
     exp_model.edits_allowed = exploration.edits_allowed
     exp_model.next_content_id_index = exploration.next_content_id_index
+    exp_model.linked_questions = exploration.linked_questions
 
     return exp_model
 

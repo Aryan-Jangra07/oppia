@@ -1,0 +1,189 @@
+<div class="modal-header">
+    <h3 class="modal-title">Publish Questions to Exploration</h3>
+    <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
+</div>
+
+<div class="modal-body publish-wizard-container">
+    <!-- Progress Indicator -->
+    <div class="wizard-progress" *ngIf="currentStep !== WizardStep.SELECT_QUESTIONS">
+        <div class="progress-steps">
+            <div class="progress-step" [class.active]="currentStep >= WizardStep.SELECT_QUESTIONS"
+                [class.complete]="currentStep > WizardStep.SELECT_QUESTIONS">
+                <div class="step-number">1</div>
+                <div class="step-label">Select</div>
+            </div>
+            <div class="progress-line" [class.complete]="currentStep > WizardStep.PREVIEW_QUESTION"></div>
+            <div class="progress-step" [class.active]="currentStep >= WizardStep.PREVIEW_QUESTION"
+                [class.complete]="currentStep > WizardStep.PREVIEW_QUESTION">
+                <div class="step-number">2</div>
+                <div class="step-label">Preview</div>
+            </div>
+            <div class="progress-line" [class.complete]="currentStep > WizardStep.CHOOSE_PLACEMENT"></div>
+            <div class="progress-step" [class.active]="currentStep >= WizardStep.CHOOSE_PLACEMENT"
+                [class.complete]="currentStep > WizardStep.CHOOSE_PLACEMENT">
+                <div class="step-number">3</div>
+                <div class="step-label">Place</div>
+            </div>
+            <div class="progress-line" [class.complete]="currentStep > WizardStep.CREATING_STATES"></div>
+            <div class="progress-step" [class.active]="currentStep >= WizardStep.CREATING_STATES"
+                [class.complete]="currentStep > WizardStep.CREATING_STATES">
+                <div class="step-number">4</div>
+                <div class="step-label">Create</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="alert alert-danger" *ngIf="errorMessage">
+        {{ errorMessage }}
+    </div>
+
+    <!-- Step 1: Select Questions -->
+    <div class="wizard-step" *ngIf="currentStep === WizardStep.SELECT_QUESTIONS">
+        <h4>Select Questions to Publish</h4>
+        <p class="text-muted">Choose which questions you want to add as exploration states.</p>
+
+        <div class="selection-controls mb-3">
+            <button class="btn btn-sm btn-outline-primary" (click)="selectAll()">Select All</button>
+            <button class="btn btn-sm btn-outline-secondary ms-2" (click)="deselectAll()">Deselect All</button>
+            <span class="ms-3 text-muted">{{ selectedCount }} selected</span>
+        </div>
+
+        <div class="question-list">
+            <div *ngFor="let question of questionsWithSelection; let i = index" class="question-item">
+                <input type="checkbox" [id]="'q-' + i" [(ngModel)]="question.selected" class="form-check-input">
+                <label [for]="'q-' + i" class="question-label">
+                    <span class="question-text">{{ question.question_text }}</span>
+                    <span class="badge bg-info ms-2">{{ question.type }}</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Preview Question -->
+    <div class="wizard-step" *ngIf="currentStep === WizardStep.PREVIEW_QUESTION && currentQuestion">
+        <h4>Preview Question</h4>
+        <p class="text-muted">Review the question before creating a state.</p>
+
+        <div class="question-preview-card">
+            <div class="question-header">
+                <span class="badge bg-primary">{{ currentQuestion.type }}</span>
+                <span class="question-counter">Question {{ currentQuestionIndex + 1 }} of {{ selectedQuestions.length
+                    }}</span>
+            </div>
+
+            <div class="question-content">
+                <h5>{{ currentQuestion.question_text }}</h5>
+
+                <!-- MCQ Options -->
+                <div *ngIf="currentQuestion.type === 'mcq' && currentQuestion.options" class="options-list">
+                    <div *ngFor="let option of currentQuestion.options" class="option-item">
+                        <i class="fas fa-circle"></i>
+                        <span>{{ option.text }}</span>
+                    </div>
+                </div>
+
+                <!-- Numeric Input -->
+                <div *ngIf="currentQuestion.type === 'numeric'" class="numeric-info">
+                    <p><strong>Expected Answer:</strong> {{ currentQuestion.answer }}</p>
+                    <p *ngIf="currentQuestion.tolerance"><strong>Tolerance:</strong> ± {{ currentQuestion.tolerance }}
+                    </p>
+                    <p *ngIf="currentQuestion.units"><strong>Units:</strong> {{ currentQuestion.units }}</p>
+                </div>
+
+                <!-- Correct Answer -->
+                <div class="correct-answer mt-3">
+                    <strong>Correct Answer:</strong> {{ getCorrectAnswerText() }}
+                </div>
+
+                <!-- Explanation -->
+                <div *ngIf="currentQuestion.explanation" class="explanation mt-3">
+                    <strong>Explanation:</strong>
+                    <p>{{ currentQuestion.explanation }}</p>
+                </div>
+
+                <!-- Hints -->
+                <div *ngIf="currentQuestion.hints && currentQuestion.hints.length > 0" class="hints mt-3">
+                    <strong>Hints:</strong>
+                    <ul>
+                        <li *ngFor="let hint of currentQuestion.hints">{{ hint }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Choose Placement -->
+    <div class="wizard-step" *ngIf="currentStep === WizardStep.CHOOSE_PLACEMENT">
+        <h4>Choose State Placement</h4>
+        <p class="text-muted">Select where to insert the new states in your exploration.</p>
+
+        <div class="placement-selector">
+            <label for="insertionPoint" class="form-label">Insert states:</label>
+            <select id="insertionPoint" class="form-select" [(ngModel)]="insertionPoint">
+                <option value="end">At the end of the exploration</option>
+                <option *ngFor="let stateName of availableStates" [value]="stateName">
+                    After "{{ stateName }}"
+                </option>
+            </select>
+
+            <div class="placement-info mt-3">
+                <i class="fas fa-info-circle"></i>
+                <span>{{ selectedQuestions.length }} state(s) will be created</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Creating States -->
+    <div class="wizard-step" *ngIf="currentStep === WizardStep.CREATING_STATES">
+        <h4>Creating States...</h4>
+        <p class="text-muted">Please wait while we create exploration states from your questions.</p>
+
+        <div class="progress-container">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                    [style.width.%]="progressPercentage" role="progressbar">
+                    {{ createdStatesCount }} / {{ selectedQuestions.length }}
+                </div>
+            </div>
+            <p class="mt-2 text-center">{{ createdStatesCount }} of {{ selectedQuestions.length }} states created</p>
+        </div>
+    </div>
+
+    <!-- Step 5: Complete -->
+    <div class="wizard-step" *ngIf="currentStep === WizardStep.COMPLETE">
+        <div class="completion-message">
+            <i class="fas fa-check-circle text-success"></i>
+            <h4>Success!</h4>
+            <p>{{ createdStatesCount }} exploration state(s) have been created from your questions.</p>
+            <p class="text-muted">You can now edit, reorder, or link these states in the exploration editor.</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary"
+        *ngIf="currentStep !== WizardStep.CREATING_STATES && currentStep !== WizardStep.COMPLETE" (click)="cancel()">
+        Cancel
+    </button>
+
+    <button type="button" class="btn btn-outline-secondary"
+        *ngIf="currentStep > WizardStep.SELECT_QUESTIONS && currentStep < WizardStep.CREATING_STATES"
+        (click)="previousStep()">
+        <i class="fas fa-arrow-left"></i> Back
+    </button>
+
+    <button type="button" class="btn btn-primary" *ngIf="currentStep < WizardStep.CREATING_STATES" (click)="nextStep()"
+        [disabled]="isProcessing">
+        <span *ngIf="currentStep === WizardStep.CHOOSE_PLACEMENT">
+            <i class="fas fa-magic"></i> Create States
+        </span>
+        <span *ngIf="currentStep !== WizardStep.CHOOSE_PLACEMENT">
+            Next <i class="fas fa-arrow-right"></i>
+        </span>
+    </button>
+
+    <button type="button" class="btn btn-success" *ngIf="currentStep === WizardStep.COMPLETE" (click)="close()">
+        <i class="fas fa-check"></i> Done
+    </button>
+</div>

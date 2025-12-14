@@ -41,6 +41,7 @@ export type ExplorationChange =
   | ExplorationChangeDeleteState
   | ExplorationChangeEditStateProperty
   | ExplorationChangeEditExplorationProperty
+  | ExplorationChangeUpdateLinkedQuestions
   | RevertChangeList
   | CreateChangeList
   | MigrateStatesVersionChangeList;
@@ -171,6 +172,11 @@ export interface ExplorationChangeRemoveVoiceovers {
 export interface ExplorationChangeRemoveTranslations {
   cmd: 'remove_translations';
   content_id: string;
+}
+
+export interface ExplorationChangeUpdateLinkedQuestions {
+  cmd: 'update_linked_questions';
+  linked_questions: unknown[];
 }
 
 export interface ExplorationDraftDict {

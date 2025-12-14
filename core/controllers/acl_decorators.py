@@ -2876,6 +2876,14 @@ def can_manage_question_skill_status(
         if not self.user_id:
             raise base.UserFacingExceptions.NotLoggedInException
 
+        # TEMPORARY: Allow all logged-in users to create questions in dev mode
+        # This is for testing the question import feature
+        # TODO: Remove this bypass before deploying to production
+        from core.constants import constants
+
+        if constants.DEV_MODE:
+            return handler(self, **kwargs)
+
         if (
             role_services.ACTION_MANAGE_QUESTION_SKILL_STATUS
             in self.user.actions
@@ -3531,6 +3539,14 @@ def can_create_skill(
         """
         if not self.user_id:
             raise base.UserFacingExceptions.NotLoggedInException
+
+        # TEMPORARY: Allow all logged-in users to create skills in dev mode
+        # This is for testing the question import feature
+        # TODO: Remove this bypass before deploying to production
+        from core.constants import constants
+
+        if constants.DEV_MODE:
+            return handler(self, **kwargs)
 
         user_actions_info = user_services.get_user_actions_info(self.user_id)
         if role_services.ACTION_CREATE_NEW_SKILL in user_actions_info.actions:

@@ -36,6 +36,8 @@ import {ReassignRoleConfirmationModalComponent} from './settings-tab/templates/r
 import {ModeratorUnpublishExplorationModalComponent} from './settings-tab/templates/moderator-unpublish-exploration-modal.component';
 import {TransferExplorationOwnershipModalComponent} from './settings-tab/templates/transfer-exploration-ownership-modal.component';
 import {HelpModalComponent} from './modal-templates/help-modal.component';
+import {QuestionImportExportModalComponent} from '../creator-dashboard-page/modal-templates/question-import-export-modal.component';
+import {QuestionImportWizardModalComponent} from './modal-templates/question-import-wizard-modal.component';
 import {DeleteAudioTranslationModalComponent} from './translation-tab/modal-templates/delete-audio-translation-modal.component';
 import {TranslationTabBusyModalComponent} from './translation-tab/modal-templates/translation-tab-busy-modal.component';
 import {PreviewSetParametersModalComponent} from './preview-tab/templates/preview-set-parameters-modal.component';
@@ -257,6 +259,8 @@ import {WindowDimensionsService} from 'services/contextual/window-dimensions.ser
     ExplorationEditorPageComponent,
     StateVersionHistoryComponent,
     ExplorationEditorPageRootComponent,
+    QuestionImportExportModalComponent,
+    QuestionImportWizardModalComponent,
   ],
   entryComponents: [
     DeleteStateSkillModalComponent,
@@ -312,6 +316,8 @@ import {WindowDimensionsService} from 'services/contextual/window-dimensions.ser
     ExplorationEditorPageComponent,
     StateVersionHistoryComponent,
     ExplorationEditorPageRootComponent,
+    QuestionImportExportModalComponent,
+    QuestionImportWizardModalComponent,
   ],
   providers: [
     AlertsService,

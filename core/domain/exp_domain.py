@@ -155,6 +155,8 @@ CMD_REMOVE_VOICEOVERS = 'remove_voiceovers'
 CMD_EDIT_STATE_PROPERTY: Final = 'edit_state_property'
 # This takes additional 'property_name' and 'new_value' parameters.
 CMD_EDIT_EXPLORATION_PROPERTY: Final = 'edit_exploration_property'
+# This takes additional 'linked_questions' parameter.
+CMD_UPDATE_LINKED_QUESTIONS: Final = 'update_linked_questions'
 # This takes additional 'from_version' and 'to_version' parameters for logging.
 CMD_MIGRATE_STATES_SCHEMA_TO_LATEST_VERSION: Final = (
     'migrate_states_schema_to_latest_version'
@@ -1369,7 +1371,7 @@ class VersionedExplorationInteractionIdsMapping:
         self.state_interaction_ids_dict = state_interaction_ids_dict
 
 
-class ExplorationDict(TypedDict):
+class ExplorationDict(TypedDict, total=False):
     """Dictionary representing the Exploration object."""
 
     id: str
@@ -1389,6 +1391,7 @@ class ExplorationDict(TypedDict):
     edits_allowed: bool
     next_content_id_index: int
     version: int
+    linked_questions: List[Dict[str, Any]]
 
 
 class ExplorationDictForAndroid(TypedDict):
@@ -1495,6 +1498,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
         edits_allowed: bool,
         created_on: Optional[datetime.datetime] = None,
         last_updated: Optional[datetime.datetime] = None,
+        linked_questions: Optional[List[Dict[str, Any]]] = None,
     ) -> None:
         """Initializes an Exploration domain object.
 
@@ -1559,6 +1563,9 @@ class Exploration(translation_domain.BaseTranslatableObject):
         self.auto_tts_enabled = auto_tts_enabled
         self.next_content_id_index = next_content_id_index
         self.edits_allowed = edits_allowed
+        self.linked_questions = (
+            linked_questions if linked_questions is not None else []
+        )
 
     def get_translatable_contents_collection(
         self, **kwargs: Optional[str]
@@ -1783,6 +1790,10 @@ class Exploration(translation_domain.BaseTranslatableObject):
         exploration.version = exploration_version
         exploration.created_on = exploration_created_on
         exploration.last_updated = exploration_last_updated
+
+        # Handle linked_questions if present in the dict.
+        if 'linked_questions' in exploration_dict:
+            exploration.linked_questions = exploration_dict['linked_questions']
 
         return exploration
 
@@ -6124,6 +6135,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                 for (state_name, state) in self.states.items()
             },
             'version': self.version,
+            'linked_questions': self.linked_questions,
         }
         exploration_dict_deepcopy = copy.deepcopy(exploration_dict)
         return exploration_dict_deepcopy

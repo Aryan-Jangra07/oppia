@@ -137,6 +137,7 @@ export class ExplorationEditorPageComponent implements OnInit, OnDestroy {
   areExplorationWarningsVisible: boolean;
   isModalOpenable: boolean = true;
   modifyTranslationsFeatureFlagIsEnabled: boolean = false;
+  linkedQuestions: any[] = [];
 
   constructor(
     private alertsService: AlertsService,
@@ -814,6 +815,63 @@ export class ExplorationEditorPageComponent implements OnInit, OnDestroy {
 
   isImprovementsTabEnabled(): boolean {
     return this.improvementsTabIsEnabled;
+  }
+
+  openQuestionImportModal(): void {
+    // First, open the import/export modal to let user upload questions
+    const QuestionImportExportModalComponent =
+      require('../creator-dashboard-page/modal-templates/question-import-export-modal.component').QuestionImportExportModalComponent;
+
+    this.ngbModal
+      .open(QuestionImportExportModalComponent, {
+        backdrop: 'static',
+        size: 'xl',
+        windowClass: 'oppia-question-import-export-modal',
+      })
+      .result.then(
+        result => {
+          // If questions were imported, open the wizard modal
+          if (result && result.questions && result.questions.length > 0) {
+            const QuestionImportWizardModalComponent =
+              require('./modal-templates/question-import-wizard-modal.component').QuestionImportWizardModalComponent;
+
+            const wizardModalRef = this.ngbModal.open(
+              QuestionImportWizardModalComponent,
+              {
+                backdrop: 'static',
+                size: 'xl',
+                windowClass: 'oppia-question-import-wizard-modal',
+              }
+            );
+
+            // Pass the imported questions to the wizard
+            wizardModalRef.componentInstance.questions = result.questions;
+
+            wizardModalRef.result.then(
+              wizardResult => {
+                if (wizardResult && wizardResult.success) {
+                  console.log('Questions imported successfully:', wizardResult);
+                  // Update linked questions count
+                  if (wizardResult.stateNames) {
+                    this.linkedQuestions = wizardResult.stateNames.map(
+                      (name: string, index: number) => ({
+                        id: wizardResult.statesAdded ? index : null,
+                        name: name,
+                      })
+                    );
+                  }
+                }
+              },
+              () => {
+                // Wizard dismissed
+              }
+            );
+          }
+        },
+        () => {
+          // Import modal dismissed
+        }
+      );
   }
 
   ngOnDestroy(): void {

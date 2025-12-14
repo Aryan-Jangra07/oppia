@@ -1,0 +1,271 @@
+.publish-wizard-container {
+    min-height: 400px;
+    padding: 20px;
+}
+
+/* Progress Indicator */
+.wizard-progress {
+    margin-bottom: 30px;
+}
+
+.progress-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.progress-step.active .step-number {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.progress-step.complete .step-number {
+    background-color: #198754;
+    color: white;
+}
+
+.step-label {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.progress-step.active .step-label {
+    color: #0d6efd;
+    font-weight: 600;
+}
+
+.progress-line {
+    width: 80px;
+    height: 2px;
+    background-color: #e9ecef;
+    margin: 0 10px 20px 10px;
+    transition: background-color 0.3s ease;
+}
+
+.progress-line.complete {
+    background-color: #198754;
+}
+
+/* Question List */
+.selection-controls {
+    display: flex;
+    align-items: center;
+}
+
+.question-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.question-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.question-item:hover {
+    background-color: #f8f9fa;
+}
+
+.question-item input[type="checkbox"] {
+    margin-top: 4px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.question-label {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    cursor: pointer;
+    margin: 0;
+}
+
+.question-text {
+    flex-grow: 1;
+    line-height: 1.5;
+}
+
+/* Question Preview */
+.question-preview-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.question-counter {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.question-content h5 {
+    margin-bottom: 20px;
+    color: #212529;
+}
+
+.options-list {
+    margin: 20px 0;
+}
+
+.option-item {
+    padding: 10px;
+    margin-bottom: 8px;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.option-item i {
+    margin-right: 12px;
+    color: #6c757d;
+    font-size: 8px;
+}
+
+.numeric-info p {
+    margin-bottom: 8px;
+}
+
+.correct-answer {
+    padding: 12px;
+    background-color: #d1e7dd;
+    border-left: 4px solid #198754;
+    border-radius: 4px;
+}
+
+.explanation {
+    padding: 12px;
+    background-color: #cfe2ff;
+    border-left: 4px solid #0d6efd;
+    border-radius: 4px;
+}
+
+.hints {
+    padding: 12px;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
+}
+
+.hints ul {
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+/* Placement Selector */
+.placement-selector {
+    max-width: 500px;
+}
+
+.placement-info {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background-color: #e7f1ff;
+    border-radius: 4px;
+}
+
+.placement-info i {
+    margin-right: 8px;
+    color: #0d6efd;
+}
+
+/* Progress Container */
+.progress-container {
+    max-width: 500px;
+    margin: 40px auto;
+}
+
+.progress {
+    height: 30px;
+}
+
+/* Completion Message */
+.completion-message {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.completion-message i {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.completion-message h4 {
+    margin-bottom: 16px;
+    color: #198754;
+}
+
+.completion-message p {
+    margin-bottom: 8px;
+}
+
+/* Wizard Step */
+.wizard-step {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .progress-steps {
+        flex-wrap: wrap;
+    }
+
+    .progress-line {
+        width: 40px;
+    }
+
+    .step-label {
+        font-size: 10px;
+    }
+}

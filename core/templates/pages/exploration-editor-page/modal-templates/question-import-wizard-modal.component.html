@@ -1,0 +1,186 @@
+<div class="modal-header">
+    <h3 class="modal-title">Import Questions</h3>
+    <button type="button" class="close" aria-label="Close" (click)="cancel()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body">
+    <!-- Step Indicator -->
+    <div class="wizard-steps">
+        <div class="step" [class.active]="currentStep === WizardStep.SELECT_QUESTIONS"
+            [class.completed]="currentStep > WizardStep.SELECT_QUESTIONS">
+            <div class="step-number">1</div>
+            <div class="step-label">Select</div>
+        </div>
+        <div class="step" [class.active]="currentStep === WizardStep.ASSIGN_SKILLS"
+            [class.completed]="currentStep > WizardStep.ASSIGN_SKILLS">
+            <div class="step-number">2</div>
+            <div class="step-label">Configure</div>
+        </div>
+        <div class="step" [class.active]="currentStep === WizardStep.REVIEW"
+            [class.completed]="currentStep > WizardStep.REVIEW">
+            <div class="step-number">3</div>
+            <div class="step-label">Review</div>
+        </div>
+        <div class="step" [class.active]="currentStep === WizardStep.SAVING || currentStep === WizardStep.COMPLETE">
+            <div class="step-number">4</div>
+            <div class="step-label">Save</div>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        {{ errorMessage }}
+    </div>
+
+    <!-- Step 1: Select Questions -->
+    <div *ngIf="currentStep === WizardStep.SELECT_QUESTIONS" class="wizard-content">
+        <h4>Select Questions to Import</h4>
+        <p class="text-muted">Choose which questions you want to save to the question bank.</p>
+
+        <div class="question-actions mb-3">
+            <button class="btn btn-sm btn-outline-primary" (click)="selectAll()">Select All</button>
+            <button class="btn btn-sm btn-outline-secondary ml-2" (click)="deselectAll()">Deselect All</button>
+            <span class="ml-3 text-muted">{{ selectedCount }} selected</span>
+        </div>
+
+        <div class="question-list">
+            <div *ngFor="let question of questionsWithMetadata; let i = index" class="question-item">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [(ngModel)]="question.selected" [id]="'q-' + i">
+                    <label class="form-check-label" [for]="'q-' + i">
+                        <strong>{{ question.question_text }}</strong>
+                        <span class="badge badge-info ml-2">{{ question.type }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Assign Skills -->
+    <div *ngIf="currentStep === WizardStep.ASSIGN_SKILLS" class="wizard-content">
+        <h4>Configure Questions</h4>
+        <p class="text-muted">Set difficulty level for each question. All questions will be linked to "{{
+            DEFAULT_SKILL_NAME }}" skill.</p>
+
+        <div class="question-config-list">
+            <div *ngFor="let question of selectedQuestions; let i = index" class="question-config-item">
+                <div class="question-header">
+                    <strong>{{ i + 1 }}. {{ question.question_text }}</strong>
+                </div>
+                <div class="config-controls">
+                    <label class="mr-2">Difficulty:</label>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn" [class.btn-primary]="question.difficulty < 0.33"
+                            [class.btn-outline-primary]="question.difficulty >= 0.33"
+                            (click)="question.difficulty = 0.0">
+                            Easy
+                        </button>
+                        <button type="button" class="btn"
+                            [class.btn-primary]="question.difficulty >= 0.33 && question.difficulty < 0.67"
+                            [class.btn-outline-primary]="question.difficulty < 0.33 || question.difficulty >= 0.67"
+                            (click)="question.difficulty = 0.5">
+                            Medium
+                        </button>
+                        <button type="button" class="btn" [class.btn-primary]="question.difficulty >= 0.67"
+                            [class.btn-outline-primary]="question.difficulty < 0.67"
+                            (click)="question.difficulty = 1.0">
+                            Hard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Review -->
+    <div *ngIf="currentStep === WizardStep.REVIEW" class="wizard-content">
+        <h4>Review & Confirm</h4>
+        <p class="text-muted">Review your questions before saving them to the question bank.</p>
+
+        <div class="review-summary">
+            <div class="summary-item">
+                <strong>Total Questions:</strong> {{ selectedQuestions.length }}
+            </div>
+            <div class="summary-item">
+                <strong>Skill:</strong> {{ DEFAULT_SKILL_NAME }}
+            </div>
+        </div>
+
+        <div class="review-list">
+            <div *ngFor="let question of selectedQuestions; let i = index" class="review-item">
+                <div class="review-number">{{ i + 1 }}</div>
+                <div class="review-content">
+                    <div class="review-question">{{ question.question_text }}</div>
+                    <div class="review-meta">
+                        <span class="badge badge-info">{{ question.type }}</span>
+                        <span class="badge badge-secondary ml-2">{{ getDifficultyLabel(question.difficulty) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Saving -->
+    <div *ngIf="currentStep === WizardStep.SAVING" class="wizard-content text-center">
+        <h4>Saving Questions...</h4>
+        <div class="progress mt-4">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                [style.width.%]="progressPercentage">
+                {{ savedQuestionIds.length }} / {{ selectedQuestions.length }}
+            </div>
+        </div>
+        <p class="text-muted mt-3">Please wait while we save your questions.</p>
+    </div>
+
+    <!-- Step 5: Complete -->
+    <div *ngIf="currentStep === WizardStep.COMPLETE" class="step-content">
+        <div class="success-message">
+            <i class="material-icons">check_circle</i>
+            <h3>Import Complete!</h3>
+            <p>Successfully imported {{ savedQuestionIds.length }} question(s) to the question bank.</p>
+        </div>
+
+        <div class="completion-actions">
+            <h4>What would you like to do next?</h4>
+
+            <button class="btn btn-primary btn-lg quiz-button" (click)="generateQuiz()" [disabled]="isProcessing">
+                <i class="material-icons">quiz</i>
+                Generate Quiz Exploration
+            </button>
+            <p class="help-text">
+                Create a new exploration where each imported question becomes a quiz state
+            </p>
+
+            <button class="btn btn-secondary" (click)="close()" [disabled]="isProcessing">
+                Close
+            </button>
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message">
+            {{ errorMessage }}
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button *ngIf="currentStep !== WizardStep.SAVING && currentStep !== WizardStep.COMPLETE" type="button"
+        class="btn btn-secondary" (click)="cancel()">
+        Cancel
+    </button>
+    <button *ngIf="currentStep > WizardStep.SELECT_QUESTIONS && currentStep < WizardStep.REVIEW" type="button"
+        class="btn btn-outline-primary" (click)="previousStep()">
+        <i class="fas fa-arrow-left"></i> Back
+    </button>
+    <button *ngIf="currentStep < WizardStep.REVIEW" type="button" class="btn btn-primary" (click)="nextStep()">
+        Next <i class="fas fa-arrow-right"></i>
+    </button>
+    <button *ngIf="currentStep === WizardStep.REVIEW" type="button" class="btn btn-success" (click)="nextStep()"
+        [disabled]="isProcessing">
+        <i class="fas fa-save"></i> Save Questions
+    </button>
+    <button *ngIf="currentStep === WizardStep.COMPLETE" type="button" class="btn btn-primary" (click)="close()">
+        Done
+    </button>
+</div>
