@@ -19,11 +19,57 @@
 import {Injectable} from '@angular/core';
 import {EditableQuestionBackendApiService} from 'domain/question/editable-question-backend-api.service';
 
+export interface StateJSON {
+  classifier_model_id: null;
+  linked_skill_id: null;
+  content: {
+    content_id: string;
+    html: string;
+  };
+  interaction: {
+    id: string;
+    customization_args: Record<string, unknown>;
+    answer_groups: unknown[];
+    default_outcome: unknown;
+    confirmed_unclassified_answers: unknown[];
+    hints: unknown[];
+    solution: unknown;
+  };
+  param_changes: unknown[];
+  solicit_answer_details: boolean;
+  card_is_checkpoint: boolean;
+  inapplicable_skill_misconception_ids: null;
+}
+
 export interface QuizGenerationResult {
   statesAdded: number;
   stateNames: string[];
-  statesJSON: any;
+  statesJSON: Record<string, StateJSON>;
   success: boolean;
+}
+
+interface QuestionObject {
+  questionStateData: {
+    content: {
+      content_id: string;
+      html: string;
+    };
+    interaction: {
+      id: string;
+      customizationArgs: Record<string, unknown>;
+      answerGroups: Array<{
+        outcome: {
+          dest: string;
+        };
+      }>;
+      defaultOutcome: {
+        dest: string;
+      } | null;
+      confirmedUnclassifiedAnswers?: unknown[];
+      hints?: unknown[];
+      solution?: unknown;
+    };
+  };
 }
 
 @Injectable({
@@ -37,39 +83,29 @@ export class QuizExplorationGeneratorService {
   /**
    * Generates quiz states JSON from imported questions.
    * Returns JSON that can be manually added to exploration.
-   * @param questionIds Array of question IDs to convert to states
-   * @returns Promise that resolves with generation result including JSON
+   * @param questionIds Array of question IDs to convert to states.
+   * @returns Promise that resolves with generation result including JSON.
    */
   async addQuestionsAsStates(
     questionIds: string[]
   ): Promise<QuizGenerationResult> {
     try {
-      console.log(
-        `🎯 Generating quiz states for ${questionIds.length} questions...`
-      );
-
-      // 1. Fetch all questions
+      // Fetch all questions.
       const questions = await this.fetchQuestions(questionIds);
-      console.log(`✅ Fetched ${questions.length} questions`);
 
-      // 2. Generate state names
+      // Generate state names.
       const stateNames = this.generateStateNames(questions.length);
 
-      // 3. Generate states JSON
+      // Generate states JSON.
       const statesJSON = this.generateStatesJSON(questions, stateNames);
 
-      // 4. Log the JSON for user to copy
-      console.log('📋 Generated States JSON:');
-      console.log(JSON.stringify(statesJSON, null, 2));
-
       return {
-        statesAdded: questions.length + 1, // +1 for completion state
+        statesAdded: questions.length + 1,
         stateNames: [...stateNames, 'Quiz_Complete'],
         statesJSON: statesJSON,
         success: true,
       };
     } catch (error) {
-      console.error('❌ Error generating quiz states:', error);
       throw new Error(`Failed to generate quiz states: ${error}`);
     }
   }
@@ -77,15 +113,18 @@ export class QuizExplorationGeneratorService {
   /**
    * Fetches questions by their IDs.
    */
-  private async fetchQuestions(questionIds: string[]): Promise<any[]> {
-    const questions = [];
+  private async fetchQuestions(
+    questionIds: string[]
+  ): Promise<QuestionObject[]> {
+    const questions: QuestionObject[] = [];
     for (const questionId of questionIds) {
       try {
         const questionData =
           await this.questionBackendApiService.fetchQuestionAsync(questionId);
-        questions.push(questionData.questionObject);
+        questions.push(questionData.questionObject as QuestionObject);
       } catch (error) {
-        console.error(`Failed to fetch question ${questionId}:`, error);
+        // Skip questions that fail to fetch.
+        continue;
       }
     }
     return questions;
@@ -105,10 +144,13 @@ export class QuizExplorationGeneratorService {
   /**
    * Generates the complete states JSON structure.
    */
-  private generateStatesJSON(questions: any[], stateNames: string[]): any {
-    const states: any = {};
+  private generateStatesJSON(
+    questions: QuestionObject[],
+    stateNames: string[]
+  ): Record<string, StateJSON> {
+    const states: Record<string, StateJSON> = {};
 
-    // Generate question states
+    // Generate question states.
     questions.forEach((question, index) => {
       const stateName = stateNames[index];
       const nextStateName =
@@ -120,8 +162,9 @@ export class QuizExplorationGeneratorService {
       );
     });
 
-    // Add final completion state
-    states['Quiz_Complete'] = this.createCompletionStateDict();
+    // Add final completion state.
+    const quizCompleteKey = 'Quiz_Complete';
+    states[quizCompleteKey] = this.createCompletionStateDict();
 
     return states;
   }
@@ -130,9 +173,9 @@ export class QuizExplorationGeneratorService {
    * Converts a Question object to a state dictionary.
    */
   private convertQuestionToStateDict(
-    question: any,
+    question: QuestionObject,
     nextStateName: string
-  ): any {
+  ): StateJSON {
     const questionState = question.questionStateData;
 
     return {
@@ -142,15 +185,13 @@ export class QuizExplorationGeneratorService {
       interaction: {
         id: questionState.interaction.id,
         customization_args: questionState.interaction.customizationArgs,
-        answer_groups: questionState.interaction.answerGroups.map(
-          (ag: any) => ({
-            ...ag,
-            outcome: {
-              ...ag.outcome,
-              dest: nextStateName,
-            },
-          })
-        ),
+        answer_groups: questionState.interaction.answerGroups.map(ag => ({
+          ...ag,
+          outcome: {
+            ...ag.outcome,
+            dest: nextStateName,
+          },
+        })),
         default_outcome: questionState.interaction.defaultOutcome
           ? {
               ...questionState.interaction.defaultOutcome,
@@ -172,7 +213,7 @@ export class QuizExplorationGeneratorService {
   /**
    * Creates the final "Quiz Complete" state dictionary.
    */
-  private createCompletionStateDict(): any {
+  private createCompletionStateDict(): StateJSON {
     return {
       classifier_model_id: null,
       linked_skill_id: null,
